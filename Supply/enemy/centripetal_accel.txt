@@ -1,0 +1,9 @@
+a.c = sqr(v) / r
+a.c limit = 90
+
+v = r * omega
+r = v / omega
+
+a.c = sqr(v) / (v / omega)
+a.c = sqr(v) / v * omega
+a.c = v * omega

@@ -1,0 +1,5 @@
+newmtl PartMaterial(Clone)
+Kd 1 1 1
+map_Kd texture.AQF-21_Mod2_export.png
+illum 2
+
