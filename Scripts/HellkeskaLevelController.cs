@@ -90,7 +90,10 @@
 
                 if (AttackTimer <= 0)
                 {
-                    DogfightState = DogfightStates.NoneAhead;
+                    if (DogfightState == DogfightStates.Start)
+                    {
+                        DogfightState = DogfightStates.NoneAhead;
+                    }
 
                     // Select alive enemy
                     EnemyObj = Random.Range(0, 5 - TargetsDestroyed);
