@@ -38,11 +38,11 @@
         {
             int id = -1;
 
-            if (ptfl.relpos0.z > 0 && fighters[0].EnemyState != FighterScript.EnemyStates.Destroyed && fighters[0].EnemyState != FighterScript.EnemyStates.Bomber) id = 0;
-            else if (ptfl.relpos1.z > 0 && fighters[1].EnemyState != FighterScript.EnemyStates.Destroyed && fighters[1].EnemyState != FighterScript.EnemyStates.Bomber) id = 1;
-            else if (ptfl.relpos2.z > 0 && fighters[2].EnemyState != FighterScript.EnemyStates.Destroyed && fighters[2].EnemyState != FighterScript.EnemyStates.Bomber) id = 2;
-            else if (ptfl.relpos3.z > 0 && fighters[3].EnemyState != FighterScript.EnemyStates.Destroyed && fighters[3].EnemyState != FighterScript.EnemyStates.Bomber) id = 3;
-            else if (ptfl.relpos4.z > 0 && fighters[4].EnemyState != FighterScript.EnemyStates.Destroyed && fighters[4].EnemyState != FighterScript.EnemyStates.Bomber) id = 4;
+            if (ptfl.relpos0.z > 0 && !fighters[0].f_t.IsDisabled && EnemyObj != 0) id = 0;
+            else if (ptfl.relpos1.z > 0 && !fighters[1].f_t.IsDisabled && EnemyObj != 1) id = 1;
+            else if (ptfl.relpos2.z > 0 && !fighters[2].f_t.IsDisabled && EnemyObj != 2) id = 2;
+            else if (ptfl.relpos3.z > 0 && !fighters[3].f_t.IsDisabled && EnemyObj != 3) id = 3;
+            else if (ptfl.relpos4.z > 0 && !fighters[4].f_t.IsDisabled && EnemyObj != 4) id = 4;
 
             return id;
         }
@@ -65,7 +65,7 @@
 
             PlayerPosition = ServiceProvider.Instance.PlayerAircraft.MainCockpitPosition;
 
-            if (ClosestDistanceScript.closest < 1000)
+            if (ClosestDistanceScript.closest < 3000)
             {
                 FailMission = true;
             }
@@ -96,22 +96,19 @@
                     }
 
                     // Select alive enemy
-                    EnemyObj = Random.Range(0, 5 - TargetsDestroyed);
+                    EnemyObj = Random.Range(0, 5 - TargetsDestroyed - (EnemyAhead == -1 ? 0 : 1));
                     for (int i = 0; i < EnemyObj; i++)
                     {
-                        if (fighters[i].EnemyState == FighterScript.EnemyStates.Destroyed)
+                        if (fighters[i].EnemyState == FighterScript.EnemyStates.Destroyed || fighters[i].EnemyState == FighterScript.EnemyStates.Ahead)
                             EnemyObj++;
                     }
 
-                    if (fighters[EnemyObj].EnemyState != FighterScript.EnemyStates.Ahead)
-                    {
-                        BomberTimer = 30;
-                        ShownBomberAlert = false;
-                        fighters[EnemyObj].EnemyState = FighterScript.EnemyStates.Bomber;
+                    BomberTimer = 30;
+                    ShownBomberAlert = false;
+                    fighters[EnemyObj].EnemyState = FighterScript.EnemyStates.Bomber;
 
-                        AttackTimer = 0;
-                        LevelState = LevelStates.Attack;
-                    }
+                    AttackTimer = 0;
+                    LevelState = LevelStates.Attack;
                 }
             }
             else if (LevelState == LevelStates.Attack)
@@ -138,6 +135,7 @@
             }
             else if (LevelState == LevelStates.Break)
             {
+                EnemyObj = -1;
                 AttackTimer = Random.Range(25f, 35f);
                 LevelState = LevelStates.StartAttack;
             }
@@ -148,37 +146,41 @@
 
                 if (EnemyAhead != -1)
                 {
-                    for (int i = 0; i < fighters.Length; i++)
-                    {
-                        if (EnemyAhead == i)
-                            fighters[i].EnemyState = FighterScript.EnemyStates.Ahead;
-                    }
+                    fighters[EnemyAhead].EnemyState = FighterScript.EnemyStates.Ahead;
 
                     DogfightState = DogfightStates.EnemyAhead;
                 }
             }
             else if (DogfightState == DogfightStates.EnemyAhead)
             {
-                if (EnemyAhead == 0 && (ptfl.relpos0.z < 0 || fighters[0].EnemyState == FighterScript.EnemyStates.Destroyed) ||
-                    EnemyAhead == 1 && (ptfl.relpos1.z < 0 || fighters[1].EnemyState == FighterScript.EnemyStates.Destroyed) ||
-                    EnemyAhead == 2 && (ptfl.relpos2.z < 0 || fighters[2].EnemyState == FighterScript.EnemyStates.Destroyed) ||
-                    EnemyAhead == 3 && (ptfl.relpos3.z < 0 || fighters[3].EnemyState == FighterScript.EnemyStates.Destroyed) ||
-                    EnemyAhead == 4 && (ptfl.relpos4.z < 0 || fighters[4].EnemyState == FighterScript.EnemyStates.Destroyed))
+                if ((EnemyAhead == 0 && (ptfl.relpos0.z < 0 || fighters[0].EnemyState == FighterScript.EnemyStates.Destroyed)) ||
+                    (EnemyAhead == 1 && (ptfl.relpos1.z < 0 || fighters[1].EnemyState == FighterScript.EnemyStates.Destroyed)) ||
+                    (EnemyAhead == 2 && (ptfl.relpos2.z < 0 || fighters[2].EnemyState == FighterScript.EnemyStates.Destroyed)) ||
+                    (EnemyAhead == 3 && (ptfl.relpos3.z < 0 || fighters[3].EnemyState == FighterScript.EnemyStates.Destroyed)) ||
+                    (EnemyAhead == 4 && (ptfl.relpos4.z < 0 || fighters[4].EnemyState == FighterScript.EnemyStates.Destroyed)))
                 {
-                    for (int i = 0; i < fighters.Length; i++)
+                    if (fighters[EnemyAhead].EnemyState != FighterScript.EnemyStates.Destroyed)
                     {
-                        if (EnemyAhead == i && fighters[i].EnemyState != FighterScript.EnemyStates.Destroyed)
-                        {
-                            fighters[i].EnemyState = FighterScript.EnemyStates.Behind;
-                        }
+                        fighters[EnemyAhead].EnemyState = FighterScript.EnemyStates.Behind;
                     }
+
+                    DogfightState = DogfightStates.NoneAhead;
+                    EnemyAhead = -1;
                 }
             }
+
+            ServiceProvider.Instance.GameWorld.ShowStatusMessage("Bomber=" + EnemyObj + "; Ahead=" + EnemyAhead);
 
             if (TargetsDestroyed != 5)
                 ScoreScript.score = Mathf.Clamp(20000 - Mathf.RoundToInt(LevelTimer * 30), 0, 20000);
 
             LevelTimer += Time.deltaTime;
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(ClosestDistanceScript.transform.position, 3000);
         }
     }
 }
