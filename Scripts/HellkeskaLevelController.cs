@@ -169,8 +169,6 @@
                 }
             }
 
-            ServiceProvider.Instance.GameWorld.ShowStatusMessage("Bomber=" + EnemyObj + "; Ahead=" + EnemyAhead);
-
             if (TargetsDestroyed != 5)
                 ScoreScript.score = Mathf.Clamp(20000 - Mathf.RoundToInt(LevelTimer * 30), 0, 20000);
 
